@@ -158,7 +158,7 @@ jobs:
   benchmark:
     needs:
       - changes
-    if: needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/master'
+    if: github.repository_owner == 'fastapi' && (needs.changes.outputs.src == 'true' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:

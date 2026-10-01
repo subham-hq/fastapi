@@ -10,6 +10,7 @@ permissions: {}
 
 jobs:
   deploy-docs:
+    if: github.repository_owner == 'fastapi'
     runs-on: ubuntu-latest
     permissions:
       deployments: write
