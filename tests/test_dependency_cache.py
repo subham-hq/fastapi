@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, Security
+from fastapi import APIRouter, Depends, FastAPI, Security
 from fastapi.testclient import TestClient
 
 app = FastAPI()
@@ -48,6 +48,36 @@ async def get_scope_counter(
     }
 
 
+@app.get(
+    "/parameterless-no-cache/",
+    dependencies=[Depends(dep_counter), Depends(dep_counter, use_cache=False)],
+)
+async def get_parameterless_no_cache():
+    return {"counter": counter_holder["counter"]}
+
+
+@app.get(
+    "/parameterless-security-no-cache/",
+    dependencies=[Security(dep_counter), Security(dep_counter, use_cache=False)],
+)
+async def get_parameterless_security_no_cache():
+    return {"counter": counter_holder["counter"]}
+
+
+router = APIRouter(dependencies=[Depends(dep_counter)])
+
+
+@router.get(
+    "/router-parameterless-no-cache/",
+    dependencies=[Depends(dep_counter, use_cache=False)],
+)
+async def get_router_parameterless_no_cache():
+    return {"counter": counter_holder["counter"]}
+
+
+app.include_router(router)
+
+
 client = TestClient(app)
 
 
@@ -89,3 +119,33 @@ def test_security_cache():
     response = client.get("/scope-counter/")
     assert response.status_code == 200, response.text
     assert response.json() == {"counter": 3, "scope_counter_1": 4, "scope_counter_2": 4}
+
+
+def test_parameterless_no_cache():
+    counter_holder["counter"] = 0
+    response = client.get("/parameterless-no-cache/")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"counter": 2}
+    response = client.get("/parameterless-no-cache/")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"counter": 4}
+
+
+def test_parameterless_security_no_cache():
+    counter_holder["counter"] = 0
+    response = client.get("/parameterless-security-no-cache/")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"counter": 2}
+    response = client.get("/parameterless-security-no-cache/")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"counter": 4}
+
+
+def test_router_parameterless_no_cache():
+    counter_holder["counter"] = 0
+    response = client.get("/router-parameterless-no-cache/")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"counter": 2}
+    response = client.get("/router-parameterless-no-cache/")
+    assert response.status_code == 200, response.text
+    assert response.json() == {"counter": 4}

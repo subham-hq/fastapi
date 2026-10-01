@@ -139,6 +139,7 @@ def get_parameterless_sub_dependant(*, depends: params.Depends, path: str) -> De
     return get_dependant(
         path=path,
         call=depends.dependency,
+        use_cache=depends.use_cache,
         scope=depends.scope,
         own_oauth_scopes=own_oauth_scopes,
     )
